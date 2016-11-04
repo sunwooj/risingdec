@@ -3,6 +3,8 @@
 This is a repository for the rising declarative experiment data used in the NWAV poster found below:
 http://stanford.edu/~sunwooj/documents/jeong-nwav45-poster.pdf
 
+The repository contains:
+
 * jeong-rising-declarative-data-160828.csv: full data in tidy format
 * jeong-rising-declarative-stats-160828.Rmd: Rmd file for some preliminary statistical analyses on the data
 
