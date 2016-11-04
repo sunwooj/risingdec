@@ -11,5 +11,5 @@ The repository contains:
 A link to the experiment can be found here (use 'view page source' to get the html/javascript template):
 http://stanford.edu/~sunwooj/experiments/mainexp-ver4.html
 
-A quick look at the statistical analyses of the data can be done here (same content as the .Rmd file):
+A quick look at the statistical analyses of the data (same content as the .Rmd file):
 http://rpubs.com/seraphina818/224369
