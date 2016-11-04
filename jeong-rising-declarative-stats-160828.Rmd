@@ -1,0 +1,232 @@
+---
+title: 'Rising Declarative Experiment: Statical Analyses'
+author: "Sunwoo Jeong"
+output: html_document
+---
+
+This document provides a brief summary of the statistical results for the rising declarative data.
+
+First, a brief note on organizing the data:
+
+```{r}
+## set working directory
+setwd("/Users/sunwoojeong/Desktop/mturk-experiments/")
+
+## Load the data
+dat <- read.csv('jeong-rising-declarative-data-160828.csv')
+
+## Summary of the data
+head(dat)
+
+## Speaker - Addressee epistemic authority on p
+dat$cer_diff <- dat$sp_certainty - dat$addr_certainty
+
+## Epistemic - Perlocutionary speaker authority
+dat$auth_diff <- dat$sp_certainty - dat$sp_authority
+
+## Subdivide data
+# Only assertion/question answers for Q1
+dat_2 = subset(dat, speechact_choice=="Assertion" | speechact_choice=="Question")
+# Only 3rd person subject sentences
+dat_target = subset(dat, sentence=="married" | sentence=="mom" | sentence=="obama" | sentence=="spaceship")
+dat_target = subset(dat_target, speechact_choice=="Assertion" | speechact_choice=="Question")
+# Only subject minimal pair sentences
+dat_y <- dat[dat$sentence == "yemen", ]
+dat_y = subset(dat_y, speechact_choice=="Assertion" | speechact_choice=="Question")
+
+```
+
+
+
+
+## Factors that influence inquisitive vs. assertive interpretations
+
+# (column 2 of the poster)
+
+```{r}
+
+## Intonation and speaker gender effect
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("rise1", "rise2", "rise3", "qrise3", "fall"))
+mylogit1 <- glm(speechact_choice ~ intonation + pronoun + speaker_gender, data = dat_target, family = "binomial")
+summary(mylogit1)
+
+## Conte(n/x)t effect
+
+mylogit2 <- glm(speechact_choice ~ intonation + pronoun, data = dat_y, family = "binomial")
+summary(mylogit2)
+
+# Relevel conte(n/x)t factors (pronoun) to enable other direct comparisons 
+
+dat_y$pronoun <- factor(dat_y$pronoun, levels = c("lenny", "you", "i"))
+mylogit2 <- glm(speechact_choice ~ intonation + pronoun, data = dat_y, family = "binomial")
+summary(mylogit2)
+```
+
+Summary of the factors that influence assertion vs. question interpretations of rising declaratives:
+
+* Steeper rises: more question than assertion interpretations, other things being equal
+* Male speakers: more assertion than question interpretations, other things being equal
+* Conte(n/x)t: more assertion than question interpretations in the following order for subject personhood: I > Lenny > You
+
+
+
+
+## Different conventional effects for inquisitive vs. assertive rising declaratives 
+
+# (column 3 of the poster)
+
+# Models on speaker epistemic certainty
+
+Models for ratings on speaker epistemic certainty on p (Q2).
+
+```{r}
+library(lmerTest)
+
+## Speaker epistemic certainty
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("fall", "rise1", "rise2", "rise3", "qrise3"))
+epi <- lmer(sp_certainty ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(epi)
+
+# Relevel intonation factors to enable other direct comparisons between intonations
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("rise1", "rise2", "rise3", "qrise3", "fall"))
+epi <- lmer(sp_certainty ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(epi)
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("rise2", "rise3", "qrise3", "fall", "rise1"))
+epi <- lmer(sp_certainty ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(epi)
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("rise3", "qrise3", "fall", "rise1", "rise2"))
+epi <- lmer(sp_certainty ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(epi)
+```
+Summary of the models on speaker epistemic certainty (on p) rating:
+
+* Choice on speech act (Assertion vs. Question) is a significant predictor: Higher speaker epistemic authority on p when construed as an assertion
+* Intonation (+ sentence type) is a significant predictor: higher epistemic certainty for falling dec > rise1 dec (>) rise2 dec, rise3 dec, rise 3 polar interrogative
+* Speaker gender is not a significant predictor
+
+
+
+# Models on speaker - addressee epistemic certainty
+
+Models on speaker - addressee epistemic certainty on p (i.e. relative epistemic certainty for the two interlocutors; Q3-Q2) 
+
+```{r}
+
+## Speaker - addressee epistemic certainty
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("fall", "rise1", "rise2", "rise3", "qrise3"))
+cerdiff <- lmer(cer_diff ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(cerdiff)
+
+# Relevel speech act factors for intercept estimate comparison (+ vs. - values)
+
+dat_2$speechact_choice <- factor(dat_2$speechact_choice, levels = c("Question", "Assertion"))
+cerdiff <- lmer(cer_diff ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(cerdiff)
+dat_2$speechact_choice <- factor(dat_2$speechact_choice, levels = c("Assertion", "Question"))
+
+# Relevel intonation factors to enable other direct comparisons between intonations
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("rise1", "rise2", "rise3", "qrise3", "fall"))
+cerdiff <- lmer(cer_diff ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(cerdiff)
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("rise3", "qrise3", "fall", "rise1", "rise2"))
+cerdiff <- lmer(cer_diff ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(cerdiff)
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("qrise3", "fall", "rise1", "rise2", "rise3"))
+cerdiff <- lmer(cer_diff ~ intonation + speechact_choice + speaker_gender
+            + (1|speaker) + (1|workerid), data = dat_2)
+summary(cerdiff)
+```
+
+Summary of the models on speaker - addressee epistemic certainty (on p) rating:
+
+* Choice on speech act (Assertion vs. Question) is a significant predictor: speaker's epistemic authority higher than addressee's when construed as an assertion; addressee's epistemic authority higher than speaker's when construed as a question.
+* Intonation (+ sentence type) is a significant predictor: higher relative speaker epistemic certainty for falling dec > rise1 dec, rise2 dec, rise3 dec, rise 3 polar interrogative
+* Speaker gender is a significant predictor: male assertions with lower relative speaker epistemic certainty
+
+
+
+
+# Models on speaker politeness
+
+```{r}
+
+## Speaker politeness
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("fall", "rise1", "rise2", "rise3", "qrise3"))
+polite <- lmer(sp_politeness ~ intonation + speechact_choice + speaker_gender
+                + (1|speaker) + (1|workerid), data = dat_2)
+summary(polite)
+
+# Relevel intonation factors to enable other direct comparisons between intonations
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("qrise3", "fall", "rise1", "rise2", "rise3"))
+polite <- lmer(sp_politeness ~ intonation + speechact_choice + speaker_gender
+                + (1|speaker) + (1|workerid), data = dat_2)
+summary(polite)
+```
+
+Summary of the models on speaker politeness rating:
+
+* Neither choice on speech act (Assertion vs. Question), nor speaker gender are significant predictors.
+* However, sentence type + intonation is a significant predictor, particulary between falling declarative < rising declaratives < polar interrogatives: inquisitive vs. assertion rising declaratives have different politeness effects compared to their canonical alternatives (falling declarative, polar interrogative, respectively.)
+
+
+
+
+
+# Models on speaker authority
+
+```{r}
+
+## Speaker authority
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("fall", "rise1", "rise2", "rise3", "qrise3"))
+authority <- lmer(sp_authority ~ intonation + speechact_choice + speaker_gender
+                + (1|speaker) + (1|workerid), data = dat_2)
+summary(authority)
+
+# Relevel intonation factors to enable other direct comparisons between intonations
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("qrise3", "fall", "rise1", "rise2", "rise3"))
+authority <- lmer(sp_authority ~ intonation + speechact_choice + speaker_gender
+                + (1|speaker) + (1|workerid), data = dat_2)
+summary(authority)
+
+## cf. epistemic - perlocutionary authority (Q2-Q5)
+
+dat_2$intonation <- factor(dat_2$intonation, levels = c("rise1", "rise2", "rise3", "qrise3", "fall"))
+authdiff <- lmer(auth_diff ~ intonation + speechact_choice + speaker_gender
+                + (1|speaker) + (1|workerid), data = dat_2)
+summary(authdiff)
+
+# Relevel speech act factors for intercept estimate comparison (+ vs. - values)
+
+dat_2$speechact_choice <- factor(dat_2$speechact_choice, levels = c("Question", "Assertion"))
+authdiff <- lmer(auth_diff ~ intonation + speechact_choice + speaker_gender
+                + (1|speaker) + (1|workerid), data = dat_2)
+summary(authdiff)
+dat_2$speechact_choice <- factor(dat_2$speechact_choice, levels = c("Assertion", "Question"))
+```
+
+Summary of the models on speaker authority rating:
+
+* Assertion speech act associated with significantly more speaker authority than Question speech act.
+* Assertive rising declaratives signal significantly less speaker authority than canonical assertive falling declaratives, whereas inquisitive rising declaratives signal comparable degree of speaker authority as canonical questioning polar interrogatives.
+* Intonation a significant predictor, but speaker gender again not a significant predictor.
