@@ -10,3 +10,4 @@ A link to the experiment can be found here (use 'view page source' to get the ht
 http://stanford.edu/~sunwooj/experiments/mainexp-ver4.html
 
 A quick look at the statistical analyses of the data can be done here (same content as the .Rmd file):
+http://rpubs.com/seraphina818/224369
